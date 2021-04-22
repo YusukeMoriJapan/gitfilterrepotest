@@ -117,10 +117,17 @@ class AudioAdapter(
         saveItemStateOnScroll(currentAudio, holder)
 
         holder.binding.audioRowLayout.setOnClickListener {
-            if (multiSelection)
-                applySelection(holder, currentAudio)
-            else
-                launch { selectedAudioEntity.emit(currentAudio) }
+            when {
+                multiSelection ->
+                    applySelection(holder, currentAudio)
+                currentAudio.gpsDataList == null ->
+                    showSnackBar("この録音データに***REMOVED***")
+                else ->
+                    launch {
+                        holder.currentPosition?.let { playBackViewModel.skipToQueueItem(it.toLong()) }
+                        selectedAudioEntity.emit(currentAudio)
+                    }
+            }
         }
         holder.binding.audioRowLayout.setOnLongClickListener {
             if (!multiSelection) {
